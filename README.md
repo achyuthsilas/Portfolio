@@ -32,5 +32,5 @@ Or push to GitHub and import the repo on Vercel — it auto-detects Vite/TanStac
 
 ## Socials
 - GitHub: https://github.com/achyuthsilas
-- LinkedIn: https://www.linkedin.com/in/achyuthkumar09/
+- LinkedIn: https://www.linkedin.com/in/achyuthsilas/
 - LeetCode: https://leetcode.com/u/achyuthsilas/
