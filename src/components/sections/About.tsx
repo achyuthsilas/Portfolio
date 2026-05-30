@@ -22,7 +22,7 @@ export function About() {
           <div className="mt-10 space-y-4 font-mono text-sm max-w-md">
             <div className="flex justify-between border-b border-border pb-3">
               <span className="text-muted-foreground">Based in</span>
-              <span>Remote · Earth</span>
+              <span>Santa Clara · USA</span>
             </div>
             <div className="flex justify-between border-b border-border pb-3">
               <span className="text-muted-foreground">Focus</span>

@@ -2,7 +2,6 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { useGLTF, Environment, ContactShadows } from "@react-three/drei";
 import { Suspense, useRef, useEffect } from "react";
 import * as THREE from "three";
-import { projectScrollState } from "@/lib/project-scroll";
 
 const MODEL_URL = "/models/tesla_bot.glb";
 
@@ -35,9 +34,9 @@ const TARGETS: Record<(typeof ORDER)[number], Target> = {
   skills:       { x:  0.0,  y: -1.4,  z:  0.4,  scale: 1.85, rotY:  0.0,  rotZ: 0 },
   // Head only, right-side profile. y = 0.4 - 0.8*scale centers the head at the camera
   // center (y=0.4); rotY=-1.2 (~69° CW from above) shows the bot's right ear/cheek.
-  experience:   { x:  0.9,  y: -3.6,  z:  2.8,  scale: 5.0,  rotY: -1.2,  rotZ: 0 },
+  experience:   { x:  0.9,  y: -2.8,  z:  2.8,  scale: 3.96, rotY: -1.2,  rotZ: 0 },
   // Full body on right, slightly facing the left-aligned project list
-  projects:     { x:  1.75, y: -1.45, z:  0.2,  scale: 1.35, rotY: -0.35, rotZ:  0.00 },
+  projects:     { x:  1.75, y: -1.45, z:  0.2,  scale: 2.0,  rotY: -0.35, rotZ:  0.00 },
   achievements: { x: -1.85, y: -1.35, z:  0.1,  scale: 1.35, rotY: -0.3,  rotZ: 0 },
   // Centered, upper body only (head + torso framed between the two contact columns)
   contact:      { x:  0.0,  y: -0.95, z:  1.05, scale: 1.85, rotY:  0.0,  rotZ: 0 },
@@ -45,8 +44,6 @@ const TARGETS: Record<(typeof ORDER)[number], Target> = {
 
 // Dark mode matches light mode exactly — same position, same framing.
 const INTRO_DARK: Target = { ...TARGETS.intro };
-// 5% scale boost applied when the scroll-pin is active (zoom-in on entry).
-const PROJECTS_PINNED: Target = { ...TARGETS.projects, scale: TARGETS.projects.scale * 1.05 };
 
 function lerp(a: number, b: number, t: number) {
   return a + (b - a) * t;
@@ -118,48 +115,58 @@ function Bot() {
     }
 
     let next: Target = TARGETS.intro;
-    let bestSectionId: (typeof ORDER)[number] = "intro";
 
     if (rects.length) {
-      // Pose follows the section at viewport center. This prevents a tall
-      // neighboring section from stealing the bot pose on 16:10 laptop screens.
+      const isDark = document.documentElement.dataset.theme !== "light";
+
+      // Find section at viewport center
       let best = rects.findIndex((r) => center >= r.top && center < r.bot);
       if (best === -1) {
         let bestDist = Infinity;
         for (let i = 0; i < rects.length; i++) {
           const mid = (rects[i].top + rects[i].bot) / 2;
           const d = Math.abs(mid - center);
-          if (d < bestDist) {
-            bestDist = d;
-            best = i;
-          }
+          if (d < bestDist) { bestDist = d; best = i; }
         }
       }
-      bestSectionId = rects[best].id;
-      const isDark = document.documentElement.dataset.theme !== "light";
-      next =
-        bestSectionId === "intro" && isDark
-          ? INTRO_DARK
-          : TARGETS[bestSectionId];
 
-      const exp = rects.find((r) => r.id === "experience");
-      const proj = rects.find((r) => r.id === "projects");
-      if (exp && proj) {
-        const band = vh * 1.4;
-        const tBlend = Math.min(1, Math.max(0, (center - (proj.top - band / 2)) / band));
+      const bestId = rects[best].id;
+      next = bestId === "intro" && isDark ? INTRO_DARK : TARGETS[bestId];
+
+      // Blend smoothly across every adjacent section boundary.
+      // For achievements→contact the blend is anchored so tBlend reaches 1
+      // exactly when the contact section top hits the viewport top.
+      for (let i = 0; i < rects.length - 1; i++) {
+        const fromId = rects[i].id;
+        const toId   = rects[i + 1].id;
+        let band: number;
+        let boundary: number;
+        if (toId === "contact") {
+          // blendEnd must equal contactTop + vh/2 so tBlend=1 exactly when
+          // the contact section top scrolls into the viewport top.
+          // boundary = blendEnd - band/2 = (contactTop + vh/2) - vh = contactTop - vh/2
+          band = vh * 2.0;
+          boundary = rects[i + 1].top - vh * 0.5;
+        } else {
+          band = vh * 1.5;
+          const midA = (rects[i].top + rects[i].bot) / 2;
+          const midB = (rects[i + 1].top + rects[i + 1].bot) / 2;
+          boundary = (midA + midB) / 2;
+        }
+        const tBlend = Math.min(1, Math.max(0, (center - (boundary - band / 2)) / band));
         if (tBlend > 0 && tBlend < 1) {
-          next = lerpTarget(TARGETS.experience, TARGETS.projects, easeInOut(tBlend));
+          const fromTarget = fromId === "intro" && isDark ? INTRO_DARK : TARGETS[fromId];
+          const toTarget   = TARGETS[toId];
+          next = lerpTarget(fromTarget, toTarget, easeInOut(tBlend));
+          break;
         }
       }
     }
 
-    // During scroll-pin sequence: freeze body at projects position + apply 5% zoom
-    if (projectScrollState.active) next = PROJECTS_PINNED;
-
     target.current = next;
 
-    // ---- ease current toward target ----
-    const k = Math.min(1, dt * 3.2);
+    // ---- ease current toward target (slower = smoother) ----
+    const k = Math.min(1, dt * 2.0);
     current.current = lerpTarget(current.current, target.current, k);
 
     if (groupRef.current) {
@@ -180,7 +187,7 @@ function Bot() {
 
     // ---- T-pose for Skills section ----
     const skillsRect = rects.find((r) => r.id === "skills");
-    const inSkills   = !!skillsRect && center >= skillsRect.top && center < skillsRect.bot;
+    const inSkills   = !!skillsRect && center >= skillsRect.top + vh * 0.5 && center < skillsRect.bot;
     armT.current = lerp(armT.current, inSkills ? 1 : 0, Math.min(1, dt * 1.8));
     // Slerp from bind-pose quaternion → identity (Mixamo bind IS T-pose: arms horizontal)
     const tpT = armT.current;
@@ -219,7 +226,7 @@ function Lights() {
 
 export function ScrollBot() {
   return (
-    <div className="pointer-events-none fixed inset-0 z-[5]">
+    <div className="pointer-events-none fixed inset-0 z-5">
       <Canvas
         camera={{ position: [0, 0.4, 5.4], fov: 36 }}
         dpr={[1, 2]}

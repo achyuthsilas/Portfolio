@@ -23,7 +23,7 @@ export function Skills() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              className="bg-background p-8 hover:bg-card transition-colors"
+              className="bg-background/60 p-8 hover:bg-card/60 transition-colors"
             >
               <div className="font-mono text-xs uppercase tracking-widest text-muted-foreground mb-4">
                 {group.group}

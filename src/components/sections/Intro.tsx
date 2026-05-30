@@ -38,7 +38,7 @@ export function Intro() {
           >
             {profile.name.split(" ")[0]}
             <br />
-            <em className="text-primary">{profile.name.split(" ").slice(1).join(" ")}.</em>
+            <em className="text-primary whitespace-nowrap">{profile.name.split(" ").slice(1).join(" ")}.</em>
           </motion.h1>
 
           <motion.p

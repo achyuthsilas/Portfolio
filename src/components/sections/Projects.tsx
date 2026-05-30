@@ -1,44 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { projects } from "@/lib/portfolio-data";
 import { ProjectModal, type ProjectModalData } from "@/components/ProjectModal";
-import { projectScrollState } from "@/lib/project-scroll";
 
 export function Projects() {
   const [active, setActive] = useState<ProjectModalData | null>(null);
-
-  useEffect(() => {
-    // Pin the Projects section for 2×vh of virtual scroll distance.
-    // Progress 0→1 is written to projectScrollState and consumed by ScrollBot.
-    const st = ScrollTrigger.create({
-      trigger: "#projects",
-      start: "top top",
-      end: "+=200%",
-      pin: true,
-      scrub: true,
-      onUpdate(self) {
-        projectScrollState.progress = self.progress;
-      },
-      onToggle(self) {
-        projectScrollState.active = self.isActive;
-        if (!self.isActive) {
-          projectScrollState.progress = self.progress;
-        }
-      },
-    });
-
-    // Defer refresh by one frame — lets layout settle after the lazy-load replaces
-    // the Suspense fallback, ensuring ScrollTrigger measures the correct bounds.
-    const rafId = requestAnimationFrame(() => ScrollTrigger.refresh());
-
-    return () => {
-      cancelAnimationFrame(rafId);
-      st.kill();
-      projectScrollState.active = false;
-    };
-  }, []);
 
   return (
     <section id="projects" className="relative px-6 py-32 md:px-16 md:py-48">
@@ -74,7 +41,7 @@ export function Projects() {
                   </span>
                   {project.name}
                 </h3>
-                <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-2" />
+                <ExternalLink className="h-5 w-5 icon-glow shrink-0 mt-2" />
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 {project.description}

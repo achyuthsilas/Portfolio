@@ -70,7 +70,7 @@ function Index() {
       <Suspense fallback={<div className="py-32 text-center text-muted-foreground">Loading projects…</div>}>
         <Projects />
       </Suspense>
-      <Marquee items={["Open to work", "Let's build", "AI Engineer", "San Jose, CA"]} />
+      <Marquee items={["Open to work", "Let's build", "AI Engineer", "Santa Clara, CA"]} />
       <Achievements />
       <Contact />
       <ChatBubble />

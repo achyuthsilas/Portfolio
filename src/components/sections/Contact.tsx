@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import { GithubIcon, LinkedinIcon, LeetcodeIcon } from "@/components/BrandIcons";
 import { profile } from "@/lib/portfolio-data";
@@ -7,7 +6,7 @@ import { profile } from "@/lib/portfolio-data";
 export function Contact() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
 
-  const submit = (e: React.FormEvent) => {
+  const submit = (e: React.SyntheticEvent) => {
     e.preventDefault();
     const body = encodeURIComponent(`${form.message}\n\n— ${form.name} (${form.email})`);
     window.location.href = `mailto:${profile.email}?subject=Portfolio inquiry&body=${body}`;
@@ -16,12 +15,12 @@ export function Contact() {
   return (
     <section id="contact" className="relative px-6 pt-32 pb-16 md:px-16 md:pt-40">
       <div className="relative z-10 mx-auto max-w-7xl">
-        <div className="font-mono text-xs uppercase tracking-[0.4em] text-primary mb-12 text-center">
+        <div className="font-mono text-xs uppercase tracking-[0.4em] text-primary mb-12">
           06 / Contact
         </div>
 
         {/* 3-col layout: form | bot spacer | info */}
-        <div className="grid gap-8 md:grid-cols-[1fr_minmax(260px,360px)_1fr] items-start mb-16">
+        <div className="grid gap-8 md:grid-cols-[1fr_minmax(260px,360px)_1fr] items-start">
           <form onSubmit={submit} className="space-y-4">
             <input
               required

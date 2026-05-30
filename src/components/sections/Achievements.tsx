@@ -4,8 +4,8 @@ import { Award, Trophy } from "lucide-react";
 
 export function Achievements() {
   return (
-    <section id="achievements" className="relative px-6 py-32 md:px-16 md:py-48">
-      <div className="relative z-10 ml-auto max-w-2xl">
+    <section id="achievements" className="relative px-6 pt-32 pb-[30vh] md:px-16 md:pt-48 md:pb-[40vh]">
+      <div className="relative z-10 w-full max-w-2xl md:w-[48vw] md:ml-[42vw] md:pl-6">
         <div className="font-mono text-xs uppercase tracking-[0.4em] text-primary mb-8">
           05 / Achievements
         </div>
