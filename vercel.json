@@ -1,5 +1,6 @@
 {
-  "buildCommand": "npm install && npm run build",
+  "buildCommand": "npm install && npm run build:static",
+  "outputDirectory": "dist/client",
   "framework": null,
-  "outputDirectory": ".vercel/output"
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
