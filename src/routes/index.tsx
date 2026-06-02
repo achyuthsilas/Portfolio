@@ -24,9 +24,9 @@ const Projects = lazy(() => import("@/components/sections/Projects").then((m) =>
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Achyuth Kumar — AI Engineer" },
+      { title: "Achyuth | AI Engineer Portfolio" },
       { name: "description", content: "AI Engineer building LLM systems, RAG pipelines, and agentic workflows." },
-      { property: "og:title", content: "Achyuth Kumar — AI Engineer" },
+      { property: "og:title", content: "Achyuth | AI Engineer Portfolio" },
       { property: "og:description", content: "AI Engineer building LLM systems, RAG pipelines, and agentic workflows." },
     ],
   }),
