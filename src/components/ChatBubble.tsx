@@ -119,6 +119,7 @@ async function callGroq(history: GroqMessage[]): Promise<string> {
 
 // ── Component ──────────────────────────────────────────────────────────────
 export function ChatBubble() {
+  const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
   const [msgs, setMsgs] = useState<Message[]>([
     {
@@ -129,6 +130,17 @@ export function ChatBubble() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const intro = document.getElementById("intro");
+    if (!intro) { setVisible(true); return; }
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(!entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    observer.observe(intro);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -168,15 +180,28 @@ export function ChatBubble() {
     }
   };
 
+  if (!visible) return null;
+
   return (
     <>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        aria-label="Open AI chat"
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_40px_var(--glow)] hover:scale-105 transition-transform"
-      >
-        {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
-      </button>
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-center gap-2">
+        {!open && (
+          <div className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 shadow-md">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500" />
+            </span>
+            <span className="text-xs font-medium text-foreground">AI Chat</span>
+          </div>
+        )}
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-label="Open AI chat"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_0_40px_var(--glow)] hover:scale-105 transition-transform"
+        >
+          {open ? <X className="h-5 w-5" /> : <MessageCircle className="h-5 w-5" />}
+        </button>
+      </div>
 
       <AnimatePresence>
         {open && (
@@ -215,6 +240,25 @@ export function ChatBubble() {
               )}
 
               <div ref={bottomRef} />
+            </div>
+
+            <div className="flex flex-nowrap justify-between gap-1 px-2 py-1.5 border-t border-border">
+              {[
+                { label: "Projects", q: "Tell me about his projects" },
+                { label: "Experience", q: "What's his work experience?" },
+                { label: "Skills", q: "What are his technical skills?" },
+                { label: "LinkedIn", q: "What's his LinkedIn profile?" },
+                { label: "Contact", q: "How can I contact Achyuth?" },
+              ].map(({ label, q }) => (
+                <button
+                  key={label}
+                  disabled={loading}
+                  onClick={() => setInput(q)}
+                  className="flex-1 rounded-full border border-border bg-muted px-1.5 py-1 text-[11px] font-medium text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors disabled:opacity-40"
+                >
+                  {label}
+                </button>
+              ))}
             </div>
 
             <div className="flex gap-2 border-t border-border p-2">
